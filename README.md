@@ -61,7 +61,7 @@ Dive into any YouTube video, pull out its transcript, and chat with an AI that �
 
 ## 📜 License
 
-![License](License) © 2025 ![Rktim](raktmxx@gmail.com)
+![License](LICENSE) © 2025 ![Rktim](raktmxx@gmail.com)
 
 
 ---
