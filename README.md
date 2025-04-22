@@ -61,7 +61,8 @@ Dive into any YouTube video, pull out its transcript, and chat with an AI that �
 
 ## 📜 License
 
-MIT © 2025 Rktim
+![License](License) © 2025 ![Rktim](raktmxx@gmail.com)
+
 
 ---
 
