@@ -1,4 +1,4 @@
-youtube-transcript-api==0.6.3
+youtube-transcript-api==0.6.2
 langchain>=0.1.0
 langchain-community>=0.0.21
 langchain-groq>=0.1.0
