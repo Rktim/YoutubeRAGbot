@@ -23,7 +23,7 @@ class YouTubeRAG:
         """Initialize the RAG system with specified LLM model."""
         try:
             # Create a persistent directory for embeddings
-            os.makedirs("db", exist_ok=True)S
+            os.makedirs("db", exist_ok=True)
             
             
             # Get Groq API key from environment
