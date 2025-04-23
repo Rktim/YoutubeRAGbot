@@ -18,7 +18,7 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 from get_transcripts import get_video_transcript
 
-class YouTubeRAG:
+class youtuberag:
     def __init__(self, model_name: str = "llama3-70b-8192"):
         """Initialize the RAG system with specified LLM model."""
         try:
