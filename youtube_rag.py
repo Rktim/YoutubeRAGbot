@@ -30,8 +30,10 @@ class YouTubeRAG:
             if not groq_api_key:
                 raise ValueError("GROQ_API_KEY not found in environment variables")
             
+            model = SentenceTransformer("all-MiniLM-L6-v2")
+            model.save("local_miniLM_model")
             self.embeddings = HuggingFaceEmbeddings(
-                model_name="all-MiniLM-L6-v2",
+                model_name="local_miniLM_model", ",
                 model_kwargs={'device': 'cpu'},
                 encode_kwargs={'normalize_embeddings': True}
                 model.save("local_miniLM_model")
