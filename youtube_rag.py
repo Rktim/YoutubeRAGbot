@@ -34,8 +34,7 @@ class YouTubeRAG:
                 model_name="all-MiniLM-L6-v2",
                 model_kwargs={'device': 'cpu'},
                 encode_kwargs={'normalize_embeddings': True}
-            )
-            
+            ).save("local_miniLM_model")
             # Initialize Groq LLM with error handling
             try:
                 self.llm = ChatGroq(
