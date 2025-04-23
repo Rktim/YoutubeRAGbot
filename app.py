@@ -1,5 +1,5 @@
 import streamlit as st
-from youtube_rag import youtuberag
+from youtube_rag import YouTubeRAG
 import os
 import re
 import time
