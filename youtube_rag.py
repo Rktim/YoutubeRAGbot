@@ -19,11 +19,12 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 from get_transcripts import get_video_transcript
 
 class YouTubeRAG:
-    def __init__(self, model_name: str = "qwen-qwq-32b):
+    def __init__(self, model_name: str = "qwen-qwq-32b"):
         """Initialize the RAG system with specified LLM model."""
         try:
             # Create a persistent directory for embeddings
-            os.makedirs("db", exist_ok=True)
+            os.makedirs("db", exist_ok=True)S
+            
             
             # Get Groq API key from environment
             groq_api_key = os.getenv("GROQ_API_KEY")
