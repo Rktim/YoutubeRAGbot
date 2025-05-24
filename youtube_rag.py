@@ -1,70 +1,72 @@
-from typing import Optional
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_groq import ChatGroq
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
-from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ConversationBufferMemory
 import os
+from typing import Optional
+from dotenv import load_dotenv
 import warnings
 import numpy as np
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
-# Filter out numpy deprecation warnings
-warnings.filterwarnings('ignore', category=DeprecationWarning)
+# Suppress warnings
+warnings.filterwarnings('ignore')
+
+try:
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+    from langchain_groq import ChatGroq
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+    from langchain_community.vectorstores import Chroma
+    from langchain.chains import ConversationalRetrievalChain
+    from langchain.memory import ConversationBufferMemory
+except ImportError as e:
+    print(f"Error importing required packages: {e}")
+    print("Please install all required packages using: pip install -r requirements.txt")
+    raise
 
 from get_transcripts import get_video_transcript
 
 class YouTubeRAG:
-    def __init__(self, model_name: str = "qwen-qwq-32b"):
-        """Initialize the RAG system with specified LLM model."""
+    def __init__(self):
+        """Initialize the YouTube RAG system."""
         try:
-            # Create a persistent directory for embeddings
-            os.makedirs("db", exist_ok=True)
-            
-            
             # Get Groq API key from environment
             groq_api_key = os.getenv("GROQ_API_KEY")
             if not groq_api_key:
                 raise ValueError("GROQ_API_KEY not found in environment variables")
-            
+
+            # Initialize embeddings with specific model and settings
             self.embeddings = HuggingFaceEmbeddings(
-                model_name="all-MiniLM-L6-v2",
+                model_name="sentence-transformers/all-MiniLM-L6-v2",
                 model_kwargs={'device': 'cpu'},
                 encode_kwargs={'normalize_embeddings': True}
             )
             
-            # Initialize Groq LLM with error handling
-            try:
-                self.llm = ChatGroq(
-                    model_name=model_name,
-                    temperature=0.7,
-                    groq_api_key=groq_api_key
-                )
-            except Exception as e:
-                raise ValueError(f"Failed to initialize Groq LLM: {str(e)}")
+            # Initialize vector store
+            self.vector_store = None
             
-            self.text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=500,
-                chunk_overlap=50,
-                length_function=len
+            # Initialize chat model
+            self.chat_model = ChatGroq(
+                api_key=groq_api_key,
+                model_name="mixtral-8x7b-32768"
             )
+            
+            # Initialize memory
             self.memory = ConversationBufferMemory(
                 memory_key="chat_history",
-                return_messages=True,
-                output_key="answer"
+                return_messages=True
             )
-            self.chain = None
-            self.db = None
+            
+            # Initialize text splitter
+            self.text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=1000,
+                chunk_overlap=200
+            )
+            
         except Exception as e:
-            print(f"Error initializing RAG system: {e}")
+            print(f"Error initializing YouTubeRAG: {e}")
             raise
 
     def load_video(self, youtube_link: str) -> bool:
-        """Load and process a YouTube video transcript into the RAG system."""
+        """Load and process a YouTube video transcript."""
         try:
             # Get transcript using our transcript fetcher
             transcript = get_video_transcript(youtube_link)
@@ -80,38 +82,38 @@ class YouTubeRAG:
 
             # Create vector store
             print("Creating vector store...")
-            self.db = Chroma.from_texts(
+            self.vector_store = Chroma.from_texts(
                 chunks,
                 self.embeddings,
                 collection_name="youtube_transcript",
                 persist_directory="db"
             )
 
-            # Create conversation chain
-            print("Setting up conversation chain...")
-            self.chain = ConversationalRetrievalChain.from_llm(
-                llm=self.llm,
-                retriever=self.db.as_retriever(search_kwargs={"k": 3}),
-                memory=self.memory,
-                return_source_documents=True,
-                output_key="answer"
-            )
-
             return True
         except Exception as e:
-            print(f"Error loading video: {str(e)}")
+            print(f"Error loading video: {e}")
             return False
 
-    def chat(self, query: str) -> Optional[str]:
-        """Chat with the RAG system about the video content."""
-        if not self.chain:
-            return "Please load a video first using load_video(youtube_link)"
-
+    def chat(self, query: str) -> str:
+        """Process a chat query and return a response."""
         try:
-            result = self.chain({"question": query})
-            return result['answer']
+            if not self.vector_store:
+                return "Please load a video first using the 'Get Transcript' button."
+            
+            # Create the chain
+            chain = ConversationalRetrievalChain.from_llm(
+                llm=self.chat_model,
+                retriever=self.vector_store.as_retriever(),
+                memory=self.memory
+            )
+            
+            # Get response
+            response = chain({"question": query})
+            return response["answer"]
+            
         except Exception as e:
-            return f"An error occurred during chat: {str(e)}"
+            print(f"Error in chat: {e}")
+            return f"An error occurred: {str(e)}"
 
 def main():
     # Initialize the RAG system
