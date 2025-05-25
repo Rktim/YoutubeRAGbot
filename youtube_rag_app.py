@@ -278,7 +278,7 @@ col1, col2 = st.columns([1, 1])
 # YouTube link input and video display in first column
 with col1:
     st.markdown("### 🎬 Enter YouTube Link")
-    youtube_link = st.text_input("", key="youtube_link", placeholder="Paste your YouTube link here...")
+    youtube_link = st.text_input("YouTube URL", key="youtube_link", placeholder="Paste your YouTube link here...")
     
     if youtube_link:
         video_id = extract_video_id(youtube_link)
